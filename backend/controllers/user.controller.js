@@ -197,3 +197,32 @@ export const getSuggestedUsers = async (req, res) => {
     });
   }
 };
+
+// <----------Follow/Unfollow----------> //
+export const followOrUnfollow = async (req, res) => {
+  try {
+    const user = req.id;
+    const targetUser = req.params.id;
+
+    if (user === targetUser) {
+      return res
+        .status(403)
+        .json({ message: "Can't Follow/Unfollow Yourself!", success: false });
+    }
+
+    const userrr = await User.findById(user);
+    const targetUserrr = await User.findById(targetUser);
+    if (!userrr || !targetUserrr) {
+      return res
+        .status(404)
+        .json({ message: "User Not Found!", success: false });
+    }
+
+    // Follow/Unfollow Logic //
+  } catch (error) {
+    console.log("Error from Follow/Unfollow @ User Controller", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", success: false });
+  }
+};
