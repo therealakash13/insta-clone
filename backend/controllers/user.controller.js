@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-import getDataUri from "../utils/datauri";
+import getDataUri from "../utils/datauri.js";
+import cloudinary from "../utils/cloudinary.js";
 
 // <---------- Registration---------- > //
 export const register = async (req, res) => {
@@ -52,7 +53,7 @@ export const login = async (req, res) => {
     }
 
     let user = await User.findOne({ email });
-    if (user) {
+    if (!user) {
       return res.status(401).json({
         message: "Incorrect Email or Password!",
         success: false,
@@ -67,7 +68,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
 
@@ -119,7 +120,7 @@ export const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    let user = await User.findById(userId);
+    let user = await User.findById(userId).select("-password");
     if (!user) {
       res.status(404).json({
         message: "No User Found",
@@ -147,10 +148,10 @@ export const editProfile = async (req, res) => {
 
     if (profilePicture) {
       const fileUri = getDataUri(profilePicture);
-      cloudResponse = await cloudinary.uploader.uploade(fileUri);
+      cloudResponse = await cloudinary.uploader.upload(fileUri);
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password");
     if (!user) {
       res.status(404).json({
         message: "No User Found",
@@ -219,6 +220,26 @@ export const followOrUnfollow = async (req, res) => {
     }
 
     // Follow/Unfollow Logic //
+    const isFollowing = userrr.following.includes(targetUser);
+    if (isFollowing) {
+      // Unfollow Logic //
+      await Promise.all([
+        User.updateOne({ _id: user }, { $pull: { following: targetUser } }),
+        User.updateOne({ _id: targetUser }, { $pull: { followers: user } }),
+      ]);
+      return res
+        .status(200)
+        .json({ message: "Unfollowed Successfully", success: true });
+    } else {
+      // Follow Logic //
+      await Promise.all([
+        User.updateOne({ _id: user }, { $push: { following: targetUser } }),
+        User.updateOne({ _id: targetUser }, { $push: { followers: user } }),
+      ]);
+      return res
+        .status(200)
+        .json({ message: "Followed Successfully", success: true });
+    }
   } catch (error) {
     console.log("Error from Follow/Unfollow @ User Controller", error);
     return res
