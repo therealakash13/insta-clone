@@ -9,10 +9,10 @@ const postSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    likes: [{ types: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   },
   { timestamps: true }
 );
 
-export default Post = mongoose.model("Post", postSchema);
+export const Post = mongoose.model("Post", postSchema);
