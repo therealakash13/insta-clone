@@ -20,11 +20,11 @@ app.get("/", (req, res) => {
 
 //middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
 const corsOptions = {
   origin: "http://localhost:5173",
-  Credentials: true,
+  credentials: true,
 };
 app.use(cors(corsOptions));
 

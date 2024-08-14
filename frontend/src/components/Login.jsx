@@ -9,11 +9,10 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
-export default function Signup() {
+export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState({
-    username: "",
     email: "",
     password: "",
   });
@@ -22,26 +21,23 @@ export default function Signup() {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const signUpHandler = async (e) => {
+  const loginHandler = async (e) => {
     e.preventDefault();
     // console.log(input);
     try {
       setLoading(true);
-      const response = await axios.post(
-        `${USER_API_ENDPOINT}/register`,
-        input,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${USER_API_ENDPOINT}/login`, input, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      console.log(response.data);
+
       if (response.data.success) {
-        navigate("/login");
+        navigate("/");
         toast.success(response.data.message);
         setInput({
-          username: "",
           email: "",
           password: "",
         });
@@ -57,24 +53,13 @@ export default function Signup() {
     <Fragment>
       <div className="flex flex-col items-center w-screen h-screen justify-center space-y-4">
         <form
-          onSubmit={signUpHandler}
-          className="max-w-4xl mx-auto gap-5 p-8 shadow-lg rounded-xl "
+          onSubmit={loginHandler}
+          className="max-w-4xl mx-auto gap-5 p-8 shadow-lg rounded-xl  "
         >
           <div className="my-4 space-y-4">
             <img className="h-24" src={logo} alt="" />
-            <p className="font-bold text-gray-500 pb-4">
-              Sign up to see photos and videos from your friends.
-            </p>
             <hr className="py-2" />
             <div className="grid w-full max-w-sm items-center gap-2">
-              <Input
-                type="text"
-                id="username"
-                name="username"
-                value={input.username}
-                onChange={onChangeHandler}
-                placeholder="Usename"
-              />
               <Input
                 type="email"
                 id="email"
@@ -96,7 +81,6 @@ export default function Signup() {
                   variant="ghost"
                   className="w-full font-bold bg-blue-500"
                 >
-                  {" "}
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please Wait
                 </Button>
@@ -106,16 +90,16 @@ export default function Signup() {
                   type="submit"
                   className="w-full font-bold bg-blue-500 text-white mt-2 hover:scale-105 hover:bg-blue-600 hover:text-white"
                 >
-                  Sign Up
+                  Log In
                 </Button>
               )}
             </div>
           </div>
         </form>
         <span>
-          Have an Account?{" "}
-          <Link to="/login" className="text-blue-500">
-            Login
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-blue-500">
+            Sign Up
           </Link>
         </span>
       </div>
