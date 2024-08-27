@@ -14,6 +14,7 @@ import useGetAllPost from "@/hooks/useGetAllPost";
 
 export default function CreatePost({ open, setOpen }) {
   const { posts } = useSelector((store) => store.post);
+  const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState("");
@@ -52,8 +53,9 @@ export default function CreatePost({ open, setOpen }) {
       if (response.data.success) {
         dispatch(setPosts([response.data.post, ...posts]));
         toast.success(response.data.message);
+        useGetAllPost();
         setOpen(false);
-        // whenever posting home page never auto refresh fix it
+        //Refresh Problem whenever posting
       }
     } catch (error) {
       toast.error(error.response.data.message);

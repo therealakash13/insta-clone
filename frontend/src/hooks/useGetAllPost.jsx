@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const useGetAllPost = () => {
-  const { user } = useSelector((store) => store.auth);
   const { post } = useSelector((store) => store.post);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -23,7 +22,7 @@ const useGetAllPost = () => {
       }
     };
     fetchAllPost();
-  }, [user, post]);
+  }, []);
 };
 
 export default useGetAllPost;
