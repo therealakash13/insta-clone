@@ -10,8 +10,13 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import CommentsDialog from "./CommentsDialog";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import { POST_API_ENDPOINT } from "@/constants/constants";
+import { toast } from "sonner";
 
-export default function Post() {
+export default function Post({ post }) {
+  const { user } = useSelector((store) => store.auth);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -24,28 +29,58 @@ export default function Post() {
     }
   };
 
+  const handlePostDelete = async (id) => {
+    try {
+      const response = await axios.post(
+        `${POST_API_ENDPOINT}/delete/${id}`,
+        {},
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setOpen(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   return (
     <>
       <div className="my-8 w-full mx-auto max-w-sm ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar>
-              <AvatarImage src="" alt="Post_image" />
+              <AvatarImage
+                src={post?.author?.profilePicture}
+                alt="Post_image"
+              />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <h1>Username</h1>
+            <h1>{post?.author?.username}</h1>
           </div>
           <Dialog>
             <DialogTrigger asChild>
               <MoreHorizontal className="cursor-pointer" />
             </DialogTrigger>
             <DialogContent className="flex flex-col items-center text-sm text-center">
-              <Button
-                variant="ghost"
-                className="cursor-pointer w-fit text-[#ED4956] font-bold"
-              >
-                Unfollow
-              </Button>
+              {user && user?._id === post?.author?._id ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => handlePostDelete(post?._id)}
+                  className="cursor-pointer w-fit text-[#ED4956] font-bold"
+                >
+                  Delete
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  className="cursor-pointer w-fit text-[#ED4956] font-bold"
+                >
+                  Unfollow
+                </Button>
+              )}
 
               <Button variant="ghost" className="cursor-pointer w-fit">
                 Add to favourites
@@ -59,7 +94,7 @@ export default function Post() {
         </div>
         <img
           className="rounded-lg w-full aspect-square object-cover my-2"
-          src="https://images.unsplash.com/photo-1719937206220-f7c76cc23d78?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          src={post?.image}
           alt="post_img"
         />
 
@@ -77,11 +112,13 @@ export default function Post() {
           <Bookmark className="cursor-pointer hover:text-gray-600" />
         </div>
 
-        <span className="font-medium block mb-1">1k Likes</span>
+        <span className="font-medium block mb-1">
+          {post?.likes.length} Likes
+        </span>
 
         <p>
-          <span className="font-medium mr-2">Username</span>
-          Caption
+          <span className="font-medium mr-2">{post?.author?.username}</span>
+          {post?.caption}
         </p>
         <span
           className="cursor-pointer text-gray-400 mt-1 text-sm"

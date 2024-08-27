@@ -1,6 +1,5 @@
 import React, { Fragment, useState } from "react";
 import logo from "../assets/logo.png";
-import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import axios from "axios";
@@ -8,8 +7,11 @@ import { USER_API_ENDPOINT } from "@/constants/constants";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { setAuthUser } from "@/redux/authSlice";
 
 export default function Login() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState({
@@ -35,6 +37,7 @@ export default function Login() {
       console.log(response.data);
 
       if (response.data.success) {
+        dispatch(setAuthUser(response.data.user));
         navigate("/");
         toast.success(response.data.message);
         setInput({
