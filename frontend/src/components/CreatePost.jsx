@@ -51,11 +51,10 @@ export default function CreatePost({ open, setOpen }) {
       );
 
       if (response.data.success) {
+        console.log(response.data);
         dispatch(setPosts([response.data.post, ...posts]));
         toast.success(response.data.message);
-        useGetAllPost();
         setOpen(false);
-        //Refresh Problem whenever posting
       }
     } catch (error) {
       toast.error(error.response.data.message);

@@ -4,21 +4,27 @@ import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import {
   Bookmark,
   Heart,
+  HeartOff,
   MessageCircle,
   MoreHorizontal,
   Send,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import CommentsDialog from "./CommentsDialog";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { POST_API_ENDPOINT } from "@/constants/constants";
 import { toast } from "sonner";
+import { setPosts } from "@/redux/postSlice";
 
 export default function Post({ post }) {
+  const { posts } = useSelector((store) => store.post);
   const { user } = useSelector((store) => store.auth);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+  const dispatch = useDispatch();
+  const [postLike, setPostLike] = useState(post.likes.length);
 
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
@@ -29,16 +35,51 @@ export default function Post({ post }) {
     }
   };
 
-  const handlePostDelete = async (id) => {
+  const handlePostDelete = async () => {
     try {
-      const response = await axios.post(
-        `${POST_API_ENDPOINT}/delete/${id}`,
-        {},
+      const response = await axios.delete(
+        `${POST_API_ENDPOINT}/delete/${post._id}`,
         { withCredentials: true }
       );
       if (response.data.success) {
+        const updatedData = posts.filter(
+          (postItems) => postItems?._id !== post?._id
+        );
+        dispatch(setPosts(updatedData));
         toast.success(response.data.message);
         setOpen(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  const handleLikeUnlike = async (postId) => {
+    try {
+      const action = liked ? "dislike" : "like";
+      const response = await axios.get(
+        `${POST_API_ENDPOINT}/${post._id}/${action}`,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes);
+        setLiked(!liked);
+
+        //Post update after like
+        const updateddPostData = posts.map((p) =>
+          p._id === post._id
+            ? {
+                ...p,
+                likes: liked
+                  ? p.likes.filter((id) => id !== user._id)
+                  : [...p.likes, user._id],
+              }
+            : p
+        );
+        dispatch(setPosts(updateddPostData));
+        toast.success(response.data.message);
       }
     } catch (error) {
       console.log(error);
@@ -68,7 +109,7 @@ export default function Post({ post }) {
               {user && user?._id === post?.author?._id ? (
                 <Button
                   variant="ghost"
-                  onClick={() => handlePostDelete(post?._id)}
+                  onClick={() => handlePostDelete()}
                   className="cursor-pointer w-fit text-[#ED4956] font-bold"
                 >
                   Delete
@@ -86,7 +127,13 @@ export default function Post({ post }) {
                 Add to favourites
               </Button>
 
-              <Button variant="ghost" className="cursor-pointer w-fit">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setOpen(false);
+                }}
+                className="cursor-pointer w-fit"
+              >
                 Cancel
               </Button>
             </DialogContent>
@@ -100,7 +147,17 @@ export default function Post({ post }) {
 
         <div className="flex items-center justify-between my-2">
           <div className="flex items-center gap-3">
-            <Heart className="cursor-pointer hover:text-gray-600" />
+            {liked ? (
+              <HeartOff
+                className="cursor-pointer hover:text-gray-600"
+                onClick={() => handleLikeUnlike(post?._id)}
+              />
+            ) : (
+              <Heart
+                className="cursor-pointer hover:text-gray-600"
+                onClick={() => handleLikeUnlike(post?._id)}
+              />
+            )}
             <MessageCircle
               onClick={() => {
                 setOpen(true);
@@ -112,9 +169,7 @@ export default function Post({ post }) {
           <Bookmark className="cursor-pointer hover:text-gray-600" />
         </div>
 
-        <span className="font-medium block mb-1">
-          {post?.likes.length} Likes
-        </span>
+        <span className="font-medium block mb-1">{postLike} Likes</span>
 
         <p>
           <span className="font-medium mr-2">{post?.author?.username}</span>

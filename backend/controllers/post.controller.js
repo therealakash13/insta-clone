@@ -45,7 +45,7 @@ export const addNewPost = async (req, res) => {
 
     return res
       .status(201)
-      .json({ message: "Post Added Successfully!", success: true });
+      .json({ post, message: "Post Added Successfully!", success: true });
   } catch (error) {
     console.log("Error from Add New Post @ Post Controller ---------->", error);
     return res
