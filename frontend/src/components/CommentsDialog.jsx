@@ -1,12 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "./ui/button";
+import { useDispatch, useSelector } from "react-redux";
+import Comment from "./Comment";
+import axios from "axios";
+import { POST_API_ENDPOINT } from "@/constants/constants";
+import { toast } from "sonner";
+import { setPosts } from "@/redux/postSlice";
 
 export default function CommentsDialog({ open, setOpen }) {
+  const dispatch = useDispatch();
+  const { selectedPost, posts } = useSelector((store) => store.post);
   const [text, setText] = useState("");
+  const [comment, setCommnent] = useState([]);
 
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
@@ -18,8 +27,41 @@ export default function CommentsDialog({ open, setOpen }) {
   };
 
   const sendCommentHandler = async () => {
-    alert(text);
+    try {
+      const response = await axios.post(
+        `${POST_API_ENDPOINT}/${selectedPost._id}/comment`,
+        { text },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        const updatedCommentData = [...comment, response.data.comment];
+        setCommnent(updatedCommentData);
+
+        const updatedPostData = posts.map((p) =>
+          p._id === selectedPost._id
+            ? { ...p, comments: updatedCommentData }
+            : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(response.data.message);
+        setText("");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
   };
+
+  useEffect(() => {
+    if (selectedPost) {
+      setCommnent(selectedPost.comments);
+    }
+  }, [selectedPost]);
   return (
     <>
       <Dialog open={open}>
@@ -31,7 +73,7 @@ export default function CommentsDialog({ open, setOpen }) {
             <div className="w-1/2">
               <img
                 className="rounded-l-lg w-full h-full object-cover "
-                src="https://images.unsplash.com/photo-1719937206220-f7c76cc23d78?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                src={selectedPost?.image}
                 alt="post_img"
               />
             </div>
@@ -41,12 +83,17 @@ export default function CommentsDialog({ open, setOpen }) {
                 <div className="flex items-center gap-3">
                   <Link>
                     <Avatar>
-                      <AvatarImage src="" alt="" />
+                      <AvatarImage
+                        src={selectedPost?.author?.profilePicture}
+                        alt=""
+                      />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div>
-                    <Link className="font-semibold text-xs">Username</Link>
+                    <Link className="font-semibold text-xs">
+                      {selectedPost?.author?.username}
+                    </Link>
                     {/* <span className="text-gray-600 text-sm">Bio Here...</span> */}
                   </div>
                 </div>
@@ -70,7 +117,9 @@ export default function CommentsDialog({ open, setOpen }) {
               </div>
               <hr />
               <div className="flex-1 overflow-y-auto max-h-96 p-4">
-                comments..
+                {comment.map((comment) => (
+                  <Comment key={comment._id} comment={comment} />
+                ))}
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2">
@@ -79,7 +128,7 @@ export default function CommentsDialog({ open, setOpen }) {
                     value={text}
                     onChange={changeEventHandler}
                     placeholder="Add a comment..."
-                    className="w-full outline-none border border-gray-300 py-2 px-4 rounded-3xl"
+                    className="w-full outline-none border border-gray-300 py-2 px-4 text-sm rounded-3xl"
                   />
                   <Button
                     disabled={!text.trim()}

@@ -15,7 +15,8 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { POST_API_ENDPOINT } from "@/constants/constants";
 import { toast } from "sonner";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
+import { Badge } from "./ui/badge";
 
 export default function Post({ post }) {
   const { posts } = useSelector((store) => store.post);
@@ -25,6 +26,7 @@ export default function Post({ post }) {
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const dispatch = useDispatch();
   const [postLike, setPostLike] = useState(post.likes.length);
+  const [comment, setCommnent] = useState(post.comments);
 
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
@@ -87,6 +89,35 @@ export default function Post({ post }) {
     }
   };
 
+  const handleComment = async () => {
+    try {
+      const response = await axios.post(
+        `${POST_API_ENDPOINT}/${post._id}/comment`,
+        { text },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (response.data.success) {
+        const updatedCommentData = [...comment, response.data.comment];
+        setCommnent(updatedCommentData);
+
+        const updatedPostData = posts.map((p) =>
+          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(response.data.message);
+        setText("");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   return (
     <>
       <div className="my-8 w-full mx-auto max-w-sm ">
@@ -99,7 +130,12 @@ export default function Post({ post }) {
               />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <h1>{post?.author?.username}</h1>
+            <div className="flex items-center gap-3">
+              <h1>{post?.author?.username}</h1>
+              {user?._id === post.author._id && (
+                <Badge variant="secondary">You</Badge>
+              )}
+            </div>
           </div>
           <Dialog>
             <DialogTrigger asChild>
@@ -160,6 +196,7 @@ export default function Post({ post }) {
             )}
             <MessageCircle
               onClick={() => {
+                dispatch(setSelectedPost(post));
                 setOpen(true);
               }}
               className="cursor-pointer hover:text-gray-600"
@@ -175,14 +212,17 @@ export default function Post({ post }) {
           <span className="font-medium mr-2">{post?.author?.username}</span>
           {post?.caption}
         </p>
-        <span
-          className="cursor-pointer text-gray-400 mt-1 text-sm"
-          onClick={() => {
-            setOpen(true);
-          }}
-        >
-          View all 10 comments
-        </span>
+        {comment.length > 0 && (
+          <span
+            className="cursor-pointer text-gray-400 mt-1 text-sm"
+            onClick={() => {
+              dispatch(setSelectedPost(post));
+              setOpen(true);
+            }}
+          >
+            View all {comment.length} comments
+          </span>
+        )}
 
         <CommentsDialog open={open} setOpen={setOpen} />
 
@@ -194,7 +234,14 @@ export default function Post({ post }) {
             placeholder="Add a comment..."
             className="outline-none text-sm w-full"
           />
-          {text && <span className="text-[#3badf8]">Post</span>}
+          {text && (
+            <span
+              onClick={handleComment}
+              className="text-[#3badf8] cursor-pointer"
+            >
+              Post
+            </span>
+          )}
         </div>
       </div>
     </>

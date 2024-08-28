@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 import CreatePost from "./CreatePost";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 
 export default function LeftSidebar() {
   const [open, setOpen] = useState(false);
@@ -32,7 +33,9 @@ export default function LeftSidebar() {
       });
       if (response.data.success) {
         dispatch(setAuthUser(null));
-        navigate("login");
+        dispatch(setSelectedPost(null));
+        dispatch(setPosts([]));
+        navigate("/login");
         toast.success(response.data.message);
       }
     } catch (error) {
