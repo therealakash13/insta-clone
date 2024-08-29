@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 import CreatePost from "./CreatePost";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
+import { Button } from "./ui/button";
 
 export default function LeftSidebar() {
   const [open, setOpen] = useState(false);
@@ -52,6 +53,9 @@ export default function LeftSidebar() {
       case "Create":
         setOpen(true);
         break;
+      case "Profile":
+        navigate(`/profile/${user?._id}`);
+        break;
 
       default:
         break;
@@ -80,20 +84,21 @@ export default function LeftSidebar() {
 
   return (
     <>
-      <div className="fixed top-0 z-10 left-0 px-4 border-r-2 border-r-gray-300 w-[16%] h-screen ">
+      <div className="fixed top-0 z-10 left-0 px-4 border-r-2 border-r-gray-300 w-fit h-screen ">
         <div className="flex flex-col items-start space-y-2">
           {sidebarItems.map((item, index) => {
             return (
-              <div
+              <Button
+                variant="secondary"
                 onClick={() => {
                   sidebarHandler(item.text);
                 }}
-                className="flex gap-3 items-center relative hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3"
+                className="flex gap-3 w-fit items-center relative hover:bg-gray-100 rounded-lg p-3 my-3"
                 key={index}
               >
                 {item.icon}
-                <span>{item.text}</span>
-              </div>
+                <span className="hidden xsm:block">{item.text}</span>
+              </Button>
             );
           })}
         </div>

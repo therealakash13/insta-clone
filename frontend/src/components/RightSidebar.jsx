@@ -8,7 +8,7 @@ export default function RightSidebar() {
   const { user } = useSelector((store) => store.auth);
   return (
     <Fragment>
-      <div className="my-10 w-fit pr-32">
+      <div className="my-10 w-fit  ">
         <div className="flex items-center gap-2">
           <Link to={`/profile/${user?._id}`}>
             <Avatar>

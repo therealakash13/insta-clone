@@ -120,7 +120,7 @@ export default function Post({ post }) {
 
   return (
     <>
-      <div className="my-8 w-full mx-auto max-w-sm ">
+      <div className="my-8 mx-auto lg:max-w-sm md:max-w-sm sm:max-w-60 sm:mx-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar>
