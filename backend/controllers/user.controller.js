@@ -139,6 +139,8 @@ export const getProfile = async (req, res) => {
       });
     }
 
+    await user.populate("posts");
+
     return res.status(200).json({ user, success: true });
   } catch (error) {
     console.log("Error from Get Profile @ User Controller ---------->", error);
