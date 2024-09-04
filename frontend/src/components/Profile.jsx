@@ -1,12 +1,13 @@
 import useGetUserProfile from "@/hooks/useGetUserProfile";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Textarea } from "./ui/textarea";
+
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { AtSign } from "lucide-react";
+import { AtSign, Heart, MessageCircle } from "lucide-react";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 
 export default function Profile() {
   const params = useParams();
@@ -42,12 +43,14 @@ export default function Profile() {
                       {userProfile?.username}
 
                       {userProfile?._id === user._id ? (
-                        <Button
-                          className="ml-2 hover:bg-gray-200 h-8"
-                          variant="secondary"
-                        >
-                          Edit Profile
-                        </Button>
+                        <Link to="/account/edit">
+                          <Button
+                            className="ml-2 hover:bg-gray-200 h-8"
+                            variant="secondary"
+                          >
+                            Edit Profile
+                          </Button>
+                        </Link>
                       ) : (
                         <>
                           {userProfile?.followers.includes(user?._id) ? (
@@ -110,38 +113,46 @@ export default function Profile() {
               >
                 POSTS
               </span>
-              <span
-                onClick={() => handleTabChange("saved")}
-                className={` cursor-pointer my-4 ${
-                  activeTab === "saved" ? "font-bold" : ""
-                }`}
-              >
-                SAVED
-              </span>
-              <span
-                onClick={() => handleTabChange("tagged")}
-                className={`  cursor-pointer my-4 ${
-                  activeTab === "tagged" ? "font-bold" : ""
-                }`}
-              >
-                TAGGED
-              </span>
+              {userProfile?._id === user._id && (
+                <>
+                  <span
+                    onClick={() => handleTabChange("saved")}
+                    className={` cursor-pointer my-4 ${
+                      activeTab === "saved" ? "font-bold" : ""
+                    }`}
+                  >
+                    SAVED
+                  </span>
+                  <span
+                    onClick={() => handleTabChange("tagged")}
+                    className={`  cursor-pointer my-4 ${
+                      activeTab === "tagged" ? "font-bold" : ""
+                    }`}
+                  >
+                    TAGGED
+                  </span>
+                </>
+              )}
             </div>
             <div className="grid grid-cols-3 gap-1">
               {dispayPosts.map((post) => {
                 return (
                   <>
-                    <div key={post._id} className="relative group">
-                      <div className="relative ">
+                    <div key={post._id} className="group relative">
+                      <div className="relative">
                         <img
-                          className="rounded-sm my-2 w-auto cursor-pointer aspect-square object-cover hover:blur-sm transition duration-300 ease-in-out"
+                          className="rounded-sm my-2 w-auto cursor-pointer aspect-square object-cover transition duration-300 ease-in-out group-hover:blur-sm"
                           src={post.image}
                           alt=""
                         />
-                        {/* fix hover pr text nhi dikhrha and dikh rha h to image blur nhi horhi */}
-                        <span className="absolute inset-auto flex items-center justify-center text-white text-xl font-bold z-10">
-                          Message
-                        </span>
+                        <div className="absolute inset-0 gap-5 flex items-center justify-center text-gray-300 text-xl cursor-pointer font-bold z-10 opacity-0 group-hover:bg-black group-hover:bg-opacity-50 group-hover:opacity-100 transition duration-300 ease-in-out">
+                          <span className="flex gap-2">
+                            <Heart /> {post.likes.length}
+                          </span>
+                          <span className="flex gap-2">
+                            <MessageCircle /> {post.comments.length}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </>

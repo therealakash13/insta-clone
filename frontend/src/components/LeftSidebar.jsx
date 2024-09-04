@@ -56,6 +56,9 @@ export default function LeftSidebar() {
       case "Profile":
         navigate(`/profile/${user?._id}`);
         break;
+      case "Home":
+        navigate("/");
+        break;
 
       default:
         break;
