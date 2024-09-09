@@ -31,6 +31,8 @@ export default function EditProfile() {
 
   const fileChangeHandler = (e) => {
     const file = e.target.files?.[0];
+    console.log(file);
+
     if (file) {
       setInput({ ...input, profilePicture: file });
     }
@@ -49,8 +51,10 @@ export default function EditProfile() {
       formData.append("bio", input.bio);
       formData.append("gender", input.gender);
       if (input.profilePicture) {
-        formData.append("file".input.profilePicture);
+        formData.append("profilePicture", input.profilePicture);
       }
+      console.log(formData);
+
       const response = await axios.post(
         `${USER_API_ENDPOINT}/profile/edit`,
         formData,
