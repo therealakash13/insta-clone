@@ -53,7 +53,7 @@ export default function EditProfile() {
       if (input.profilePicture) {
         formData.append("profilePicture", input.profilePicture);
       }
-      console.log(formData);
+      // console.log(formData);
 
       const response = await axios.post(
         `${USER_API_ENDPOINT}/profile/edit`,
@@ -66,13 +66,12 @@ export default function EditProfile() {
         }
       );
 
-      // fix this edit thing
       if (response.data.success) {
         const updatedUserData = {
           ...user,
-          bio: response.data.user.bio,
-          profilePicture: response.data.user.profilePicture,
-          gender: response.data.user.gender,
+          bio: response.data.user?.bio,
+          profilePicture: response.data.user?.profilePicture,
+          gender: response.data.user?.gender,
         };
         dispatch(setAuthUser(updatedUserData));
         navigate(`/profile/${user?._id}`);

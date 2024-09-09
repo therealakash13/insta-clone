@@ -59,6 +59,9 @@ export default function LeftSidebar() {
       case "Home":
         navigate("/");
         break;
+      case "Messages":
+        navigate("/chat");
+        break;
 
       default:
         break;

@@ -24,7 +24,6 @@ export default function Profile() {
 
   return (
     <>
-      {/* make it responsive */}
       <div className="grid grid-cols-2">
         <div className="flex w-screen">
           <div className="lg:flex-[1]"></div>
